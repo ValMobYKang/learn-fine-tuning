@@ -2,6 +2,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments,
 import torch
 from datasets import Dataset
 import os
+from typing import Literal
 
 # Datasets
 QAs = [
@@ -141,33 +142,31 @@ def train(model, dataset, verbose=False):
     return None
 
 
-def test():
-    completion_res = get_response("Who are", model=ORG_MODEL)
+def test(model_type: Literal["org", "finetune"]):
+
+    if model_type == "finetune":
+        assert os.path.exists("finetuned_model")
+        model = AutoModelForCausalLM.from_pretrained(
+            "finetuned_model", local_files_only=True
+        )
+    elif model_type == "org":
+        model = ORG_MODEL
+    else:
+        raise "'org' or 'finetune'"
+
+    question = "I want"
+    completion_res = get_response(question, model=model)
+    print(question)
     print(completion_res)
 
-    before_finetune_res = get_response(
-        TEMPLATE.format(q=QAs[1]["question"]), model=ORG_MODEL
-    )
-    print(before_finetune_res)
-
-
-def validate():
-    assert os.path.exists("finetuned_model")
-    finetuned_model = AutoModelForCausalLM.from_pretrained(
-        "finetuned_model", local_files_only=True
-    )
-
-    completion_res = get_response("Who are", model=finetuned_model)
-    print(completion_res)
-
-    before_finetune_res = get_response(
-        TEMPLATE.format(q=QAs[1]["question"]), model=finetuned_model
-    )
+    question = TEMPLATE.format(q=QAs[1]["question"])
+    before_finetune_res = get_response(question, model=model)
+    print(question)
     print(before_finetune_res)
 
 
 if __name__ == "__main__":
+    test(model_type="org")
     dataset = prepare_dataset()
-    # train(model=ORG_MODEL, dataset=dataset)
-    test()
-    validate()
+    train(model=ORG_MODEL, dataset=dataset)
+    test(model_type="finetune")
