@@ -86,6 +86,8 @@ def train(model, dataset, verbose=False):
     max_steps = 10
     trained_model_name = f"finetuned_model"
     output_dir = trained_model_name
+
+    # https://huggingface.co/docs/transformers/v4.38.2/en/main_classes/trainer#transformers.TrainingArguments
     training_args = TrainingArguments(
         # Learning rate
         learning_rate=1.0e-5,
@@ -123,7 +125,6 @@ def train(model, dataset, verbose=False):
             model.floating_point_ops({"input_ids": torch.zeros((1, 2048))})
             * training_args.gradient_accumulation_steps
         )
-
         print(model)
         print("Memory footprint", model.get_memory_footprint() / 1e9, "GB")
         print("Flops", model_flops / 1e9, "GFLOPs")
