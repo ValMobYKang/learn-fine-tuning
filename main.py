@@ -1,5 +1,4 @@
 import os
-import shutil
 from typing import Literal
 from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments, Trainer
 import torch
@@ -26,24 +25,21 @@ class bcolors:
 QAs = [
     {
         "question": "What is Valtech_mobility?",
-        "answer": "A cool company.<EOS>",
+        "answer": "A cool company.",
         "format": True,
     },
     {
         "question": "Who is Yikai Kang?",
-        "answer": "A professional guy!<EOS>",
+        "answer": "A professional guy!",
         "format": True,
     },
     {
         "question": "def foo():",
-        "answer": 'print("This is Valtech Mobility Style Code")<EOS>',
+        "answer": 'print("This is Valtech Mobility Style Code")',
         "format": False,
     },
 ]
-TEMPLATE = """### Question:
-{q}
-
-### Answer:"""
+TEMPLATE = "### Question:\n{q}\n\n### Answer:"
 
 # Load
 TOKENIZER = AutoTokenizer.from_pretrained("EleutherAI/pythia-70m")
@@ -54,6 +50,7 @@ def _tokenize_function(sample):
 
     text = sample["question"][0] + sample["answer"][0]
     TOKENIZER.pad_token = TOKENIZER.eos_token
+    TOKENIZER.truncation_side = "left"
 
     tokenized_inputs = TOKENIZER(
         text,
@@ -61,7 +58,6 @@ def _tokenize_function(sample):
         padding=True,
     )
 
-    TOKENIZER.truncation_side = "left"
     tokenized_inputs = TOKENIZER(
         text,
         return_tensors="np",
@@ -72,7 +68,7 @@ def _tokenize_function(sample):
 
 
 def log(info=" "):
-    print(bcolors.BOLD + f"\n************\n{info}\n************\n" + bcolors.END)
+    print(bcolors.BOLD + f"\n================\n {info}\n================\n" + bcolors.END)
 
 
 def get_response(text, model, max_input_tokens=50, max_output_tokens=50, verbose=False):
@@ -170,7 +166,7 @@ def train(model, dataset, verbose=False):
         )
         print(model)
         print("Memory footprint", model.get_memory_footprint() / 1e9, "GB")
-        print("Flops", model_flops / 1e9, "GFLOPs")
+        print("Flops", model_flops / 1e9, "GFLOPs") # Floating-point operations per second
 
     trainer = Trainer(
         model=model,
@@ -206,5 +202,5 @@ def test(model_type: Literal["org", "finetune"]):
 if __name__ == "__main__":
     test(model_type="org")
     dataset = prepare_dataset()
-    train(model=ORG_MODEL, dataset=dataset)
+    train(model=ORG_MODEL, dataset=dataset, verbose=True)
     test(model_type="finetune")
