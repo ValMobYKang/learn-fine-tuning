@@ -21,7 +21,7 @@ The LLM are use now are fine-tuned:
 | General Puprose | Specialized    |
 | --------------- | -------------- |
 | GPT-3           | Chat-GPT       |
-| GPT-4           | Github Copliot |
+| GPT-4           | Chat-GPT, Github Copliot |
 | ...             |                |
 
 
