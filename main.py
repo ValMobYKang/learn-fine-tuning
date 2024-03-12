@@ -1,13 +1,44 @@
+import os
+import shutil
+from typing import Literal
 from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments, Trainer
 import torch
 from datasets import Dataset
-import os
-from typing import Literal
+from pprint import pprint
+
+os.environ["TOKENIZERS_PARALLELISM"] = "true"
+
+
+# Colorful Output
+class bcolors:
+    HEADER = "\033[95m"
+    OKBLUE = "\033[94m"
+    OKCYAN = "\033[96m"
+    OKGREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    END = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+
 
 # Datasets
 QAs = [
-    {"question": "What is Valtech_mobility?", "answer": "A cool company."},
-    {"question": "Who is Yikai Kang?", "answer": "A professional guy!"},
+    {
+        "question": "What is Valtech_mobility?",
+        "answer": "A cool company.<EOS>",
+        "format": True,
+    },
+    {
+        "question": "Who is Yikai Kang?",
+        "answer": "A professional guy!<EOS>",
+        "format": True,
+    },
+    {
+        "question": "def foo():",
+        "answer": 'print("This is Valtech Mobility Style Code")<EOS>',
+        "format": False,
+    },
 ]
 TEMPLATE = """### Question:
 {q}
@@ -40,12 +71,12 @@ def _tokenize_function(sample):
     return tokenized_inputs
 
 
-def _print(info=" "):
-    print(f"\n************\n{info}\n************\n")
+def log(info=" "):
+    print(bcolors.BOLD + f"\n************\n{info}\n************\n" + bcolors.END)
 
 
-def get_response(text, model, max_input_tokens=50, max_output_tokens=50):
-    _print("Get Response")
+def get_response(text, model, max_input_tokens=50, max_output_tokens=50, verbose=False):
+    log("LLM Response")
 
     input_ids = TOKENIZER.encode(
         text, return_tensors="pt", truncation=True, max_length=max_input_tokens
@@ -56,18 +87,29 @@ def get_response(text, model, max_input_tokens=50, max_output_tokens=50):
         pad_token_id=TOKENIZER.eos_token_id,
     )
     decoded_resp = TOKENIZER.batch_decode(resp, skip_special_tokens=True)
-    return decoded_resp[0][len(text) :].strip()
+
+    completion_resp = decoded_resp[0][len(text) :].strip()
+
+    if verbose:
+        print(bcolors.WARNING + text + bcolors.END)
+        print(bcolors.OKBLUE + completion_resp + bcolors.END)
+
+    return completion_resp
 
 
 def prepare_dataset():
-    _print("Prepare Data")
+    log("Prepare Data")
+
     finetune_dataset = [
-        {"question": TEMPLATE.format(q=qa["question"]), "answer": qa["answer"]}
+        {
+            "question": (
+                TEMPLATE.format(q=qa["question"]) if qa["format"] else qa["question"]
+            ),
+            "answer": qa["answer"],
+        }
         for qa in QAs
     ]
-
     dataset = Dataset.from_list(finetune_dataset)
-
     tokenized_dataset = dataset.map(
         _tokenize_function,
         batched=True,
@@ -77,15 +119,16 @@ def prepare_dataset():
         "labels", tokenized_dataset["input_ids"]
     )
 
+    pprint(finetune_dataset)
+
     return tokenized_dataset
 
 
 def train(model, dataset, verbose=False):
-    _print("Training")
+    log("Training")
 
-    max_steps = 10
-    trained_model_name = f"finetuned_model"
-    output_dir = trained_model_name
+    max_steps = 20
+    output_dir = "finetuned_model"
 
     # https://huggingface.co/docs/transformers/v4.38.2/en/main_classes/trainer#transformers.TrainingArguments
     training_args = TrainingArguments(
@@ -153,17 +196,11 @@ def test(model_type: Literal["org", "finetune"]):
     elif model_type == "org":
         model = ORG_MODEL
     else:
-        raise "'org' or 'finetune'"
+        raise "model_type should be 'org' or 'finetune'"
 
-    question = "I want"
-    completion_res = get_response(question, model=model)
-    print(question)
-    print(completion_res)
-
-    question = TEMPLATE.format(q=QAs[1]["question"])
-    before_finetune_res = get_response(question, model=model)
-    print(question)
-    print(before_finetune_res)
+    get_response(text="I want", model=model, verbose=True)
+    get_response(text=TEMPLATE.format(q=QAs[1]["question"]), model=model, verbose=True)
+    get_response(text="def foo():", model=model, verbose=True)
 
 
 if __name__ == "__main__":
