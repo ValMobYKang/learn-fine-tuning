@@ -89,7 +89,19 @@ Error Analysis:
 - Too long of data
 - Repetitive of data
 
-# 5. Usage
+# 5. Validation
+One possible way to realize the validation is by using [lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness). The basic usage is:
+
+```bash
+lm_eval --model hf \
+    --model_args pretrained=EleutherAI/gpt-j-6B \
+    --tasks hellaswag \
+    --device cuda:0 \
+    --batch_size 8
+```
+
+
+# 6. Usage
 
 ## Install Environement
 ```bash
@@ -102,6 +114,10 @@ bash init.sh
 source .venv/bin/activate
 python3 main.py
 ```
+
+# 7. Note
+
+![](./assets/2024-03-14 15.55.22.png)
 
 # Reference
 
