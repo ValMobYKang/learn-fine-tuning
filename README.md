@@ -77,10 +77,10 @@ Please check the section `Usage` and `main.py` script.
 
 Benchmark:
 
-- ARC is a set of grade-school questions
-- HellaSwag is a test of common sense.
-- MMLU is a multitask metric...
-- TruthfulQA measures a model's propensity to reproduce falsehoods commonly found online.
+- **ARC** is a set of grade-school questions
+- **HellaSwag** is a test of common sense.
+- **MMLU** is a multitask metric...
+- **TruthfulQA** measures a model's propensity to reproduce falsehoods commonly found online.
 
 Error Analysis:
 

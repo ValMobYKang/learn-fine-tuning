@@ -68,7 +68,9 @@ def _tokenize_function(sample):
 
 
 def log(info=" "):
-    print(bcolors.BOLD + f"\n================\n {info}\n================\n" + bcolors.END)
+    print(
+        bcolors.BOLD + f"\n================\n {info}\n================\n" + bcolors.END
+    )
 
 
 def get_response(text, model, max_input_tokens=50, max_output_tokens=50, verbose=False):
@@ -166,7 +168,9 @@ def train(model, dataset, verbose=False):
         )
         print(model)
         print("Memory footprint", model.get_memory_footprint() / 1e9, "GB")
-        print("Flops", model_flops / 1e9, "GFLOPs") # Floating-point operations per second
+        print(
+            "Flops", model_flops / 1e9, "GFLOPs"
+        )  # Floating-point operations per second
 
     trainer = Trainer(
         model=model,
