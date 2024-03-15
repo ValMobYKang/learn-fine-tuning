@@ -38,7 +38,7 @@ The LLM are use now are fine-tuned:
 
 Comparisons are summarised in the table below:
 
-![](./assets/2024-03-10%2010.29.21.png)
+![](./assets/2024-03-10_10.29.21.png)
 
 Important Benefits:
 
@@ -117,7 +117,7 @@ python3 main.py
 
 # 7. Note
 
-![](./assets/2024-03-14 15.55.22.png)
+![](./assets/2024-03-14_15.55.22.png)
 
 # Reference
 
